@@ -23,12 +23,12 @@ class CSPMiddleware(object):
                 return response
 
         header = 'X-Content-Security-Policy'
+        webkit_header = 'X-WebKit-CSP'
         if getattr(settings, 'CSP_REPORT_ONLY', False):
             header = 'X-Content-Security-Policy-Report-Only'
-
-        if header in response:
-            # Don't overwrite existing headers.
-            return response
-
-        response[header] = build_policy()
+        policy = build_policy()
+        if header not in response:
+            response[header] = policy
+        if webkit_header not in response:
+            response[webkit_header] = policy
         return response
