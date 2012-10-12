@@ -58,12 +58,13 @@ class Report(models.Model):
     @classmethod
     def create(cls, report):
         """If passed a JSON blob in the report kwarg, use it."""
-        try:
-            report = json.loads(report)['csp-report']
-        except ValueError:
+        from csp.forms import ReportForm
+        form_data = dict([(key.replace('-', '_'), val,) for key, val in
+                          json.loads(report)['csp-report'].items()])
+        form = ReportForm(data=form_data)
+        if not form.is_valid():
             raise BadReportError()
-        kw = dict((k.replace('-', '_'), v) for k, v in report.items())
-        return cls(**kw)
+        return form.save()
 
     def __unicode__(self):
         return self.get_identifier()
